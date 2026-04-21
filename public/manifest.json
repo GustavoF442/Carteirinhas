@@ -1,0 +1,23 @@
+{
+  "name": "Transporte Universitário - São João Batista",
+  "short_name": "Transporte SJB",
+  "description": "Sistema de gestão de transporte universitário - Prefeitura de São João Batista",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a2744",
+  "theme_color": "#1a2744",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
