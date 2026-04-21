@@ -247,7 +247,17 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a2744] via-[#2a1a3e] to-[#8b1a2b] px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/logo.png" alt="Prefeitura de São João Batista" className="w-20 h-20 mx-auto mb-4 rounded-2xl object-cover shadow-lg" />
+          <img
+            src="/logo.png"
+            alt="Prefeitura de São João Batista"
+            className="w-20 h-20 mx-auto mb-4 rounded-2xl object-cover shadow-lg"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              const fb = document.getElementById('logo-fallback');
+              if (fb) fb.style.display = 'flex';
+            }}
+          />
+          <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-white/10 items-center justify-center text-white text-2xl font-bold" id="logo-fallback" style={{ display: 'none' }}>SJB</div>
           <h1 className="text-2xl font-bold text-white">Transporte Universitário</h1>
           <p className="text-white/50 mt-1">Prefeitura de São João Batista - SC</p>
         </div>

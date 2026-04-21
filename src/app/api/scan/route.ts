@@ -15,14 +15,26 @@ export async function POST(request: NextRequest) {
 
     const supabase = createAdminClient();
 
-    // Fast indexed lookup by qr_token
-    const { data: student, error: studentError } = await supabase
+    // Lookup by qr_token — exact first, then partial (case-insensitive)
+    let student = null;
+    const { data: s1 } = await supabase
       .from('students')
       .select('id, nome, curso, universidade, foto_url, ativo, ponto_embarque')
       .eq('qr_token', qr_token)
-      .single();
+      .maybeSingle();
 
-    if (studentError || !student) {
+    if (s1) {
+      student = s1;
+    } else {
+      const { data: s2 } = await supabase
+        .from('students')
+        .select('id, nome, curso, universidade, foto_url, ativo, ponto_embarque')
+        .ilike('qr_token', `${qr_token}%`)
+        .maybeSingle();
+      student = s2;
+    }
+
+    if (!student) {
       return NextResponse.json(
         { success: false, message: 'QR Code não encontrado' },
         { status: 404 }

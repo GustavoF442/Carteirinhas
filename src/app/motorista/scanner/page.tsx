@@ -116,15 +116,13 @@ function ScannerContent() {
   const handleScan = useCallback(async (token: string) => {
     if (!tripId) return;
 
-    // Quick local validation
+    // Quick local feedback if cached
     const cached = localCache.get(token);
-    if (!cached) {
-      setFeedback({ type: 'error', message: 'QR Code não reconhecido' });
-      setTimeout(() => setFeedback(null), 2000);
-      return;
+    if (cached) {
+      setFeedback({ type: 'success', message: `Validando ${cached.nome}...` });
     }
 
-    // Call API for authoritative registration
+    // Always call API for authoritative registration
     try {
       const res = await fetch('/api/scan', {
         method: 'POST',
