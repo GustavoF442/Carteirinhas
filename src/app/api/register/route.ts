@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
 import { generateQRToken } from '@/lib/utils';
+import { sendEmail, registrationReceivedHtml } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -155,6 +156,9 @@ export async function POST(request: NextRequest) {
       user_id: userId,
       details: { nome, email },
     }).then(() => {});
+
+    // 6. Send registration confirmation email (non-blocking)
+    sendEmail(email, 'Cadastro recebido — Transporte Universitário', registrationReceivedHtml(nome)).catch(() => {});
 
     return NextResponse.json({ success: true, user_id: userId, pending_approval: true });
   } catch (_error) {

@@ -148,8 +148,8 @@ export default function MotoristaViagens() {
                         >
                           Scanner
                         </Button>
-                        <Button onClick={() => handleStartTrip(trip.id)} size="sm">
-                          Iniciar Viagem
+                        <Button onClick={() => handleStartTrip(trip.id)} size="lg" className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl shadow-md animate-pulse">
+                          🚌 Iniciar Viagem
                         </Button>
                       </>
                     )}

@@ -130,6 +130,36 @@ export function registrationApprovedHtml(studentName: string): string {
   `;
 }
 
+export function registrationReceivedHtml(studentName: string): string {
+  return `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #1a2744, #2a1a3e); padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 20px;">Transporte Universitário</h1>
+        <p style="color: rgba(255,255,255,0.7); margin: 4px 0 0; font-size: 13px;">Prefeitura de São João Batista</p>
+      </div>
+      <div style="background: #fff; padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+        <h2 style="color: #1a2744; margin: 0 0 12px;">Olá, ${studentName}!</h2>
+        <p style="color: #4b5563; line-height: 1.6;">
+          Seu <strong>cadastro foi recebido com sucesso</strong>!
+        </p>
+        <p style="color: #4b5563; line-height: 1.6;">
+          Agora seu cadastro está sendo analisado pelo administrador. Você receberá outro email assim que ele for <strong>aprovado</strong>.
+        </p>
+        <p style="color: #4b5563; line-height: 1.6;">
+          Enquanto isso, não é necessário realizar nenhuma ação. Aguarde a confirmação.
+        </p>
+        <div style="background: #f3f4f6; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
+          <p style="color: #6b7280; margin: 0; font-size: 14px;">Status do cadastro:</p>
+          <p style="color: #d97706; margin: 4px 0 0; font-size: 18px; font-weight: 700;">⏳ Aguardando aprovação</p>
+        </div>
+        <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 20px;">
+          Este é um email automático. Não responda.
+        </p>
+      </div>
+    </div>
+  `;
+}
+
 export function registrationRejectedHtml(studentName: string): string {
   return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

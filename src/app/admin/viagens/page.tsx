@@ -271,7 +271,7 @@ export default function AdminViagens() {
                                 {((trip.boardings as unknown as {count:number}[])?.[0]?.count) || 0} pass.
                               </div>
                             )}
-                            {!isPast && trip.status === 'scheduled' && (
+                            {!isPast && (trip.status === 'scheduled' || trip.status === 'active') && (
                               <div className="flex gap-0.5 justify-center">
                                 <button
                                   onClick={() => openEditTrip(trip)}
@@ -324,6 +324,55 @@ export default function AdminViagens() {
           <div className="text-xs text-gray-500">Horário Saída</div>
         </Card>
       </div>
+
+      {/* Upcoming/Active trips list — easy driver/bus substitution */}
+      {(() => {
+        const editableTrips = monthTrips
+          .filter(t => (t.status === 'scheduled' || t.status === 'active') && !t.feriado && t.data >= todayStr)
+          .sort((a, b) => a.data.localeCompare(b.data));
+        if (editableTrips.length === 0) return null;
+        return (
+          <div className="mt-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Próximas Viagens — Trocar Motorista / Ônibus</h2>
+            <div className="space-y-2">
+              {editableTrips.map(t => {
+                const driverName = drivers.find(d => d.id === t.driver_id)?.nome || '—';
+                const busInfo = buses.find(b => b.id === t.bus_id);
+                const busLabel = busInfo ? `${busInfo.placa} - ${busInfo.modelo}` : '—';
+                const routeInfo = routes.find(r => r.id === t.route_id);
+                const routeLabel = routeInfo ? `${routeInfo.origem} → ${routeInfo.destino}` : '—';
+                const dateObj = new Date(t.data + 'T12:00:00');
+                const dayName = WEEKDAY_SHORT[dateObj.getDay()];
+                const dateStr = `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}`;
+
+                return (
+                  <div key={t.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white rounded-xl border border-gray-200">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                          t.status === 'active' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+                        }`}>
+                          {t.status === 'active' ? 'Em Andamento' : 'Agendada'}
+                        </span>
+                        <span className="text-sm font-medium text-gray-900">{dayName} {dateStr}</span>
+                        {t.horario_saida && <span className="text-xs text-gray-500">Saída: {t.horario_saida.slice(0, 5)}</span>}
+                      </div>
+                      <p className="text-sm text-gray-600">{routeLabel}</p>
+                      <div className="flex gap-4 text-xs text-gray-500">
+                        <span>Motorista: <strong className="text-gray-700">{driverName}</strong></span>
+                        <span>Ônibus: <strong className="text-gray-700">{busLabel}</strong></span>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="secondary" onClick={() => openEditTrip(t)} className="flex-shrink-0">
+                      Trocar Motorista / Ônibus
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Generate month modal */}
       <Modal open={showConfig} onClose={() => setShowConfig(false)} title={`Gerar Viagens — ${MONTH_NAMES[month]} ${year}`} size="md">

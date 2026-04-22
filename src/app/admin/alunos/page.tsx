@@ -5,7 +5,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Modal from '@/components/ui/Modal';
-import { formatCPF, formatDate } from '@/lib/utils';
+import { formatCPF, formatDate, maskCPF, maskPhone } from '@/lib/utils';
 import type { Student, Route, RouteStop } from '@/lib/types';
 
 export default function AdminAlunos() {
@@ -87,6 +87,19 @@ export default function AdminAlunos() {
       body: JSON.stringify({ type: 'registration_rejected', student_email: student.email, student_name: student.nome }),
     }).catch(() => {});
     loadStudents();
+  };
+
+  const handleDelete = async (student: Student) => {
+    if (!confirm(`ATENÇÃO: Excluir permanentemente o cadastro de ${student.nome}?\n\nIsso removerá todos os dados, embarques e votos deste aluno. Esta ação não pode ser desfeita.`)) return;
+    const res = await fetch(`/api/students?id=${student.id}`, { method: 'DELETE' });
+    if (res.ok) {
+      setShowModal(false);
+      setSelected(null);
+      loadStudents();
+    } else {
+      const err = await res.json();
+      alert('Erro ao excluir: ' + (err.error || 'Erro desconhecido'));
+    }
   };
 
   const openEdit = (student: Student) => {
@@ -271,6 +284,13 @@ export default function AdminAlunos() {
                       >
                         {student.ativo ? 'Desativar' : 'Ativar'}
                       </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDelete(student)}
+                      >
+                        Excluir
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -352,8 +372,9 @@ export default function AdminAlunos() {
               </div>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-2 flex gap-3">
               <Button onClick={() => openEdit(selected)}>Editar Informações</Button>
+              <Button variant="danger" onClick={() => handleDelete(selected)}>Excluir Cadastro</Button>
             </div>
           </div>
         )}
@@ -366,9 +387,9 @@ export default function AdminAlunos() {
               onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
             <div className="grid grid-cols-2 gap-4">
               <Input label="CPF" value={editForm.cpf}
-                onChange={(e) => setEditForm({ ...editForm, cpf: e.target.value })} />
+                onChange={(e) => setEditForm({ ...editForm, cpf: maskCPF(e.target.value) })} maxLength={14} />
               <Input label="Telefone" value={editForm.telefone}
-                onChange={(e) => setEditForm({ ...editForm, telefone: e.target.value })} />
+                onChange={(e) => setEditForm({ ...editForm, telefone: maskPhone(e.target.value) })} maxLength={15} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Input label="Curso" value={editForm.curso}

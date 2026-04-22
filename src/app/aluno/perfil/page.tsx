@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import type { Student } from '@/lib/types';
+import { maskPhone } from '@/lib/utils';
 
 export default function PerfilPage() {
   const [student, setStudent] = useState<Student | null>(null);
@@ -250,8 +251,9 @@ export default function PerfilPage() {
           <Input
             label="Telefone"
             value={form.telefone}
-            onChange={(e) => setForm({ ...form, telefone: e.target.value })}
+            onChange={(e) => setForm({ ...form, telefone: maskPhone(e.target.value) })}
             placeholder="(00) 00000-0000"
+            maxLength={15}
           />
           <Input
             label="Endereço"

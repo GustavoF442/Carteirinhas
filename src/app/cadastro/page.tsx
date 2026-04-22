@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { maskCPF, maskPhone, maskMatricula } from '@/lib/utils';
 
 export default function CadastroPage() {
   const router = useRouter();
@@ -143,14 +144,16 @@ export default function CadastroPage() {
                 label="CPF *"
                 placeholder="000.000.000-00"
                 value={form.cpf}
-                onChange={(e) => updateField('cpf', e.target.value)}
+                onChange={(e) => updateField('cpf', maskCPF(e.target.value))}
+                maxLength={14}
                 required
               />
               <Input
                 label="Telefone"
                 placeholder="(00) 00000-0000"
                 value={form.telefone}
-                onChange={(e) => updateField('telefone', e.target.value)}
+                onChange={(e) => updateField('telefone', maskPhone(e.target.value))}
+                maxLength={15}
               />
             </div>
 
@@ -174,7 +177,7 @@ export default function CadastroPage() {
                 label="Nº da Matrícula *"
                 placeholder="Ex: 2024001234"
                 value={form.matricula}
-                onChange={(e) => updateField('matricula', e.target.value)}
+                onChange={(e) => updateField('matricula', maskMatricula(e.target.value))}
                 required
               />
             </div>

@@ -7,6 +7,7 @@ import Sidebar from '@/components/ui/Sidebar';
 
 const navItems = [
   { label: 'Dashboard', href: '/admin', icon: 'dashboard' },
+  { label: 'Aprovações', href: '/admin/aprovacoes', icon: 'check' },
   { label: 'Alunos', href: '/admin/alunos', icon: 'users' },
   { label: 'Motoristas', href: '/admin/motoristas', icon: 'driver' },
   { label: 'Ônibus', href: '/admin/onibus', icon: 'bus' },
