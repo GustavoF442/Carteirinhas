@@ -3,7 +3,6 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 
@@ -81,17 +80,10 @@ export default function CadastroPage() {
         return;
       }
 
-      const supabase = createClient();
-      const { error: loginError } = await supabase.auth.signInWithPassword({
-        email: form.email,
-        password: form.senha,
-      });
-
-      if (loginError) {
-        router.push('/login');
-      } else {
-        router.push('/aluno');
-      }
+      // Registration pending approval — don't auto-login
+      setError('');
+      alert('Cadastro realizado com sucesso! Aguarde a aprovação do administrador para acessar o sistema. Você receberá um aviso quando for aprovado.');
+      router.push('/login');
     } catch (_err) {
       setError('Erro de conexão. Tente novamente.');
     }

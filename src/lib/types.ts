@@ -25,6 +25,8 @@ export interface Student {
   ponto_embarque: string | null;
   qr_token: string;
   ativo: boolean;
+  aprovado: boolean;
+  nao_retorna: boolean;
   created_at: string;
   updated_at: string;
 }

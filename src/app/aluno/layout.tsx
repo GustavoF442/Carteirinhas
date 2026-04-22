@@ -8,6 +8,7 @@ import type { Student } from '@/lib/types';
 
 const navItems = [
   { label: 'Carteirinha', href: '/aluno', icon: 'card' },
+  { label: 'Viagem do Dia', href: '/aluno/viagem', icon: 'bus' },
   { label: 'Votação Semanal', href: '/aluno/votacao', icon: 'vote' },
   { label: 'Histórico', href: '/aluno/historico', icon: 'history' },
   { label: 'Meu Perfil', href: '/aluno/perfil', icon: 'user' },

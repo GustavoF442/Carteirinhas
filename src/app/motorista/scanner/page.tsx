@@ -24,6 +24,7 @@ interface CachedStudent {
   foto_url: string | null;
   qr_token: string;
   ativo: boolean;
+  nao_retorna: boolean;
 }
 
 export default function ScannerPage() {
@@ -97,7 +98,7 @@ function ScannerContent() {
         // Cache all active students for local validation
         const { data: students } = await supabase
           .from('students')
-          .select('id, nome, curso, universidade, foto_url, qr_token, ativo')
+          .select('id, nome, curso, universidade, foto_url, qr_token, ativo, nao_retorna')
           .eq('ativo', true);
 
         if (students) {
@@ -275,6 +276,22 @@ function ScannerContent() {
           </div>
         )}
       </div>
+
+      {/* Não retorna alerts */}
+      {(() => {
+        const naoRetornaStudents = Array.from(localCache.values()).filter(s => s.nao_retorna);
+        if (naoRetornaStudents.length === 0) return null;
+        return (
+          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <h2 className="text-sm font-semibold text-amber-800 mb-2">⚠️ Alunos que NÃO voltarão hoje ({naoRetornaStudents.length})</h2>
+            <div className="space-y-1">
+              {naoRetornaStudents.map(s => (
+                <p key={s.id} className="text-sm text-amber-700">• {s.nome} ({s.curso})</p>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Recent boardings */}
       <div>

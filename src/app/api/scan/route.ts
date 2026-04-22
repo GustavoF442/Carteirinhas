@@ -1,17 +1,21 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
 import type { ScanResponse } from '@/lib/types';
+import { sanitizeInput, sanitizeForLike } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   try {
-    const { qr_token, trip_id } = await request.json();
+    const { qr_token: rawToken, trip_id: rawTripId } = await request.json();
 
-    if (!qr_token || !trip_id) {
+    if (!rawToken || !rawTripId || typeof rawToken !== 'string' || typeof rawTripId !== 'string') {
       return NextResponse.json(
         { success: false, message: 'qr_token e trip_id são obrigatórios' },
         { status: 400 }
       );
     }
+
+    const qr_token = sanitizeInput(rawToken, 200);
+    const trip_id = sanitizeInput(rawTripId, 100);
 
     const supabase = createAdminClient();
 
@@ -26,10 +30,11 @@ export async function POST(request: NextRequest) {
     if (s1) {
       student = s1;
     } else {
+      const safeToken = sanitizeForLike(qr_token);
       const { data: s2 } = await supabase
         .from('students')
         .select('id, nome, curso, universidade, foto_url, ativo, ponto_embarque')
-        .ilike('qr_token', `${qr_token}%`)
+        .ilike('qr_token', `${safeToken}%`)
         .maybeSingle();
       student = s2;
     }

@@ -3,11 +3,14 @@
 import { useEffect, useState } from 'react';
 import { StatCard } from '@/components/ui/Card';
 import Card from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
 import type { DashboardStats } from '@/lib/types';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notifyMsg, setNotifyMsg] = useState('');
+  const [notifying, setNotifying] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -77,6 +80,58 @@ export default function AdminDashboard() {
           color="blue"
         />
       </div>
+
+      {/* Notification Actions */}
+      <Card className="mb-8">
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Notificações</h2>
+        <div className="flex flex-wrap gap-3">
+          <Button
+            size="sm"
+            variant="secondary"
+            loading={notifying}
+            onClick={async () => {
+              setNotifying(true);
+              setNotifyMsg('');
+              try {
+                const res = await fetch('/api/notify', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ type: 'voting_reminder' }),
+                });
+                const data = await res.json();
+                setNotifyMsg(data.message || 'Enviado!');
+              } catch { setNotifyMsg('Erro ao enviar.'); }
+              setNotifying(false);
+            }}
+          >
+            Lembrar votação pendente
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            loading={notifying}
+            onClick={async () => {
+              setNotifying(true);
+              setNotifyMsg('');
+              try {
+                const res = await fetch('/api/notify', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ type: 'voting_complete' }),
+                });
+                const data = await res.json();
+                setNotifyMsg(data.message || 'Enviado!');
+              } catch { setNotifyMsg('Erro ao enviar.'); }
+              setNotifying(false);
+            }}
+          >
+            Avisar votação concluída
+          </Button>
+        </div>
+        {notifyMsg && (
+          <p className="mt-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg p-2">{notifyMsg}</p>
+        )}
+      </Card>
 
       {/* Comparativo voto vs embarque */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

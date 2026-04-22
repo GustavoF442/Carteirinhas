@@ -65,7 +65,17 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/cadastro')) {
+    // Role-based access control for protected areas
+    if (user) {
+      const pathname = request.nextUrl.pathname;
+
+      // Only fetch role when accessing role-sensitive paths (perf optimization)
+      const needsRoleCheck = pathname === '/login' || pathname === '/cadastro'
+        || pathname.startsWith('/admin') || pathname.startsWith('/motorista') || pathname.startsWith('/aluno');
+
+      if (!needsRoleCheck) return response;
+
+      // Get user role
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
@@ -74,15 +84,39 @@ export async function updateSession(request: NextRequest) {
 
       const role = profile?.role || user.user_metadata?.role || 'student';
 
-      const url = request.nextUrl.clone();
-      if (role === 'admin') {
-        url.pathname = '/admin';
-      } else if (role === 'driver') {
-        url.pathname = '/motorista';
-      } else {
-        url.pathname = '/aluno';
+      // Redirect logged-in users away from login/cadastro
+      if (pathname === '/login' || pathname === '/cadastro') {
+        const url = request.nextUrl.clone();
+        if (role === 'admin') {
+          url.pathname = '/admin';
+        } else if (role === 'driver') {
+          url.pathname = '/motorista';
+        } else {
+          url.pathname = '/aluno';
+        }
+        return NextResponse.redirect(url);
       }
-      return NextResponse.redirect(url);
+
+      // Block non-admins from /admin routes
+      if (pathname.startsWith('/admin') && role !== 'admin') {
+        const url = request.nextUrl.clone();
+        url.pathname = role === 'driver' ? '/motorista' : '/aluno';
+        return NextResponse.redirect(url);
+      }
+
+      // Block non-drivers from /motorista routes
+      if (pathname.startsWith('/motorista') && role !== 'driver' && role !== 'admin') {
+        const url = request.nextUrl.clone();
+        url.pathname = '/aluno';
+        return NextResponse.redirect(url);
+      }
+
+      // Block non-students from /aluno routes (admins can view for support)
+      if (pathname.startsWith('/aluno') && role !== 'student' && role !== 'admin') {
+        const url = request.nextUrl.clone();
+        url.pathname = role === 'driver' ? '/motorista' : '/admin';
+        return NextResponse.redirect(url);
+      }
     }
 
     return response;

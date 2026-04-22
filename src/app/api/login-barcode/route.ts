@@ -1,12 +1,18 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
+import { sanitizeInput, sanitizeForLike } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   try {
-    const { code } = await request.json();
+    const { code: rawCode } = await request.json();
 
-    if (!code) {
+    if (!rawCode || typeof rawCode !== 'string') {
       return NextResponse.json({ error: 'Código não fornecido' }, { status: 400 });
+    }
+
+    const code = sanitizeInput(rawCode, 100);
+    if (code.length < 4) {
+      return NextResponse.json({ error: 'Código muito curto' }, { status: 400 });
     }
 
     const supabase = createAdminClient();
@@ -27,10 +33,11 @@ export async function POST(request: NextRequest) {
       studentErr = e1;
     } else {
       // Try case-insensitive partial match (token starts with code)
+      const safeCode = sanitizeForLike(code);
       const { data: s2, error: e2 } = await supabase
         .from('students')
         .select('id, user_id, email, nome, ativo')
-        .ilike('qr_token', `${code}%`)
+        .ilike('qr_token', `${safeCode}%`)
         .maybeSingle();
       student = s2;
       studentErr = e2;

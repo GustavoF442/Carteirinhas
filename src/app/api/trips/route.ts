@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       .from('trips')
       .select('*, buses(*), drivers(*), routes(*), boardings(count)')
       .order('data', { ascending: false })
-      .limit(50);
+      .limit(100);
 
     if (date) query = query.eq('data', date);
     if (driverId) query = query.eq('driver_id', driverId);
@@ -25,7 +25,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ trips: trips || [] });
+    const res = NextResponse.json({ trips: trips || [] });
+    res.headers.set('Cache-Control', 'private, max-age=5, stale-while-revalidate=10');
+    return res;
   } catch (_error) {
     return NextResponse.json({ trips: [] }, { status: 500 });
   }

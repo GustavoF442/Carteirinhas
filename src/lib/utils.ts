@@ -32,3 +32,14 @@ export function todayISO(): string {
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ');
 }
+
+// Sanitize input for ilike queries — escape SQL wildcards
+export function sanitizeForLike(input: string): string {
+  return input.replace(/[%_\\]/g, '\\$&');
+}
+
+// Sanitize generic string input — strip control chars, limit length
+export function sanitizeInput(input: string, maxLength = 500): string {
+  // eslint-disable-next-line no-control-regex
+  return input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim().slice(0, maxLength);
+}

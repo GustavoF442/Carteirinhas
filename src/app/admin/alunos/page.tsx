@@ -58,6 +58,37 @@ export default function AdminAlunos() {
     loadStudents();
   };
 
+  const handleApprove = async (student: Student) => {
+    await fetch('/api/students', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: student.id, aprovado: true, ativo: true }),
+    });
+    // Send approval notification (non-blocking)
+    fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'registration_approved', student_email: student.email, student_name: student.nome }),
+    }).catch(() => {});
+    loadStudents();
+  };
+
+  const handleReject = async (student: Student) => {
+    if (!confirm(`Rejeitar o cadastro de ${student.nome}? Isso removerá o registro.`)) return;
+    await fetch('/api/students', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: student.id, aprovado: false, ativo: false }),
+    });
+    // Send rejection notification (non-blocking)
+    fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'registration_rejected', student_email: student.email, student_name: student.nome }),
+    }).catch(() => {});
+    loadStudents();
+  };
+
   const openEdit = (student: Student) => {
     setSelected(student);
     setEditing(true);
@@ -119,7 +150,9 @@ export default function AdminAlunos() {
     setSaving(false);
   };
 
-  const filtered = students.filter(
+  const pendingStudents = students.filter(s => !s.aprovado);
+  const approvedStudents = students.filter(s => s.aprovado);
+  const filtered = approvedStudents.filter(
     (s) =>
       s.nome.toLowerCase().includes(search.toLowerCase()) ||
       s.cpf.includes(search) ||
@@ -138,8 +171,39 @@ export default function AdminAlunos() {
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <h1 className="text-2xl font-bold text-gray-900">Gestão de Alunos</h1>
-        <span className="text-sm text-gray-500">{students.length} cadastrados</span>
+        <span className="text-sm text-gray-500">{approvedStudents.length} aprovados · {pendingStudents.length} pendentes</span>
       </div>
+
+      {/* Pending Approvals */}
+      {pendingStudents.length > 0 && (
+        <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <h2 className="text-lg font-semibold text-amber-800 mb-3">📋 Cadastros Pendentes ({pendingStudents.length})</h2>
+          <div className="space-y-3">
+            {pendingStudents.map(s => (
+              <div key={s.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-amber-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-100 rounded-full overflow-hidden flex-shrink-0">
+                    {s.foto_url ? (
+                      <img src={s.foto_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold">{s.nome.charAt(0)}</div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{s.nome}</p>
+                    <p className="text-xs text-gray-500">{s.email} · {s.curso} · {s.universidade}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => openDetails(s)}>Detalhes</Button>
+                  <Button size="sm" variant="primary" onClick={() => handleApprove(s)}>Aprovar</Button>
+                  <Button size="sm" variant="danger" onClick={() => handleReject(s)}>Rejeitar</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mb-6">
         <Input
@@ -187,9 +251,9 @@ export default function AdminAlunos() {
                   <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">{student.universidade}</td>
                   <td className="px-4 py-3 text-center">
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                      student.ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      !student.aprovado ? 'bg-amber-100 text-amber-700' : student.ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                     }`}>
-                      {student.ativo ? 'Ativo' : 'Inativo'}
+                      {!student.aprovado ? 'Pendente' : student.ativo ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">

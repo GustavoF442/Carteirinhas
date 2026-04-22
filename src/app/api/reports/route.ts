@@ -152,6 +152,28 @@ export async function GET(request: NextRequest) {
         studentsByCurso[s.curso] = (studentsByCurso[s.curso] || 0) + 1;
       });
 
+      // Vehicle usage: trips grouped by bus
+      const { data: tripsInPeriod } = await supabase
+        .from('trips')
+        .select('id, data, status, bus_id, buses(placa, modelo, capacidade), boardings(count)')
+        .gte('data', startStr)
+        .lte('data', today)
+        .neq('status', 'cancelled');
+
+      const vehicleUsage: Record<string, { placa: string; modelo: string; capacidade: number; viagens: number; total_passageiros: number }> = {};
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      tripsInPeriod?.forEach((t: any) => {
+        const bus = Array.isArray(t.buses) ? t.buses[0] : t.buses;
+        if (!bus) return;
+        const key = t.bus_id;
+        if (!vehicleUsage[key]) {
+          vehicleUsage[key] = { placa: bus.placa, modelo: bus.modelo, capacidade: bus.capacidade, viagens: 0, total_passageiros: 0 };
+        }
+        vehicleUsage[key].viagens++;
+        const bc = (Array.isArray(t.boardings) ? t.boardings[0] : t.boardings)?.count || 0;
+        vehicleUsage[key].total_passageiros += bc;
+      });
+
       // Calculate averages
       const voteValues = Object.values(votesByDate);
       const boardingValues = Object.values(boardingsByDate);
@@ -177,6 +199,7 @@ export async function GET(request: NextRequest) {
         boardings_by_curso: boardingsByCurso,
         students_by_ponto: studentsByPonto,
         students_by_curso: studentsByCurso,
+        vehicle_usage: Object.values(vehicleUsage),
       });
     }
 

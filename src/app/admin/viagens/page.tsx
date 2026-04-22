@@ -59,6 +59,10 @@ export default function AdminViagens() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
+  const [showEditTrip, setShowEditTrip] = useState(false);
+  const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+  const [editTripForm, setEditTripForm] = useState({ bus_id: '', driver_id: '', horario_saida: '' });
+  const [savingTrip, setSavingTrip] = useState(false);
   const [config, setConfig] = useState({
     bus_id: '',
     driver_id: '',
@@ -139,6 +143,34 @@ export default function AdminViagens() {
   const nextMonth = () => {
     if (month === 11) { setMonth(0); setYear(y => y + 1); }
     else setMonth(m => m + 1);
+  };
+
+  const openEditTrip = (trip: Trip) => {
+    setEditingTrip(trip);
+    setEditTripForm({
+      bus_id: trip.bus_id,
+      driver_id: trip.driver_id,
+      horario_saida: trip.horario_saida || '06:30',
+    });
+    setShowEditTrip(true);
+  };
+
+  const handleSaveTrip = async () => {
+    if (!editingTrip) return;
+    setSavingTrip(true);
+    await fetch('/api/trips', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: editingTrip.id,
+        bus_id: editTripForm.bus_id,
+        driver_id: editTripForm.driver_id,
+        horario_saida: editTripForm.horario_saida,
+      }),
+    });
+    setSavingTrip(false);
+    setShowEditTrip(false);
+    loadData();
   };
 
   const grid = getCalendarGrid(year, month);
@@ -240,16 +272,24 @@ export default function AdminViagens() {
                               </div>
                             )}
                             {!isPast && trip.status === 'scheduled' && (
-                              <button
-                                onClick={() => toggleHoliday(trip)}
-                                className={`text-[9px] px-1 py-0.5 rounded ${
-                                  trip.feriado
-                                    ? 'bg-green-200 text-green-700 hover:bg-green-300'
-                                    : 'bg-red-200 text-red-700 hover:bg-red-300'
-                                } transition-colors`}
-                              >
-                                {trip.feriado ? 'Reativar' : 'Feriado'}
-                              </button>
+                              <div className="flex gap-0.5 justify-center">
+                                <button
+                                  onClick={() => openEditTrip(trip)}
+                                  className="text-[9px] px-1 py-0.5 rounded bg-blue-200 text-blue-700 hover:bg-blue-300 transition-colors"
+                                >
+                                  Editar
+                                </button>
+                                <button
+                                  onClick={() => toggleHoliday(trip)}
+                                  className={`text-[9px] px-1 py-0.5 rounded ${
+                                    trip.feriado
+                                      ? 'bg-green-200 text-green-700 hover:bg-green-300'
+                                      : 'bg-red-200 text-red-700 hover:bg-red-300'
+                                  } transition-colors`}
+                                >
+                                  {trip.feriado ? 'Reativar' : 'Feriado'}
+                                </button>
+                              </div>
                             )}
                           </div>
                         )}
@@ -330,6 +370,36 @@ export default function AdminViagens() {
             disabled={!config.bus_id || !config.driver_id || !config.route_id}
           >
             Gerar Viagens do Mês
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Edit Trip Modal */}
+      <Modal open={showEditTrip} onClose={() => setShowEditTrip(false)} title={`Editar Viagem — ${editingTrip?.data ? new Date(editingTrip.data + 'T12:00:00').toLocaleDateString('pt-BR') : ''}`} size="md">
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">Altere o motorista, ônibus ou horário desta viagem.</p>
+          <Select
+            label="Ônibus"
+            placeholder="Selecione o ônibus"
+            options={buses.map(b => ({ value: b.id, label: `${b.placa} - ${b.modelo} (${b.capacidade} lug.)` }))}
+            value={editTripForm.bus_id}
+            onChange={e => setEditTripForm({ ...editTripForm, bus_id: e.target.value })}
+          />
+          <Select
+            label="Motorista"
+            placeholder="Selecione o motorista"
+            options={drivers.map(d => ({ value: d.id, label: d.nome }))}
+            value={editTripForm.driver_id}
+            onChange={e => setEditTripForm({ ...editTripForm, driver_id: e.target.value })}
+          />
+          <Input
+            label="Horário de Saída"
+            type="time"
+            value={editTripForm.horario_saida}
+            onChange={e => setEditTripForm({ ...editTripForm, horario_saida: e.target.value })}
+          />
+          <Button onClick={handleSaveTrip} loading={savingTrip} className="w-full">
+            Salvar Alterações
           </Button>
         </div>
       </Modal>

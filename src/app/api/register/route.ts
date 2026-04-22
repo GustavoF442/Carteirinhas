@@ -131,6 +131,8 @@ export async function POST(request: NextRequest) {
       foto_url: foto_url || null,
       endereco: endereco || null,
       qr_token,
+      aprovado: false,
+      ativo: false,
     }).select().single();
 
     if (studentError) {
@@ -154,7 +156,7 @@ export async function POST(request: NextRequest) {
       details: { nome, email },
     }).then(() => {});
 
-    return NextResponse.json({ success: true, user_id: userId });
+    return NextResponse.json({ success: true, user_id: userId, pending_approval: true });
   } catch (_error) {
     console.error('Register error:', _error);
     return NextResponse.json(

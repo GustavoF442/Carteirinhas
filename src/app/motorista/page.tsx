@@ -138,11 +138,20 @@ export default function MotoristaViagens() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     {trip.status === 'scheduled' && (
-                      <Button onClick={() => handleStartTrip(trip.id)} size="sm">
-                        Iniciar Viagem
-                      </Button>
+                      <>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => window.location.href = `/motorista/scanner?trip_id=${trip.id}`}
+                        >
+                          Scanner
+                        </Button>
+                        <Button onClick={() => handleStartTrip(trip.id)} size="sm">
+                          Iniciar Viagem
+                        </Button>
+                      </>
                     )}
                     {trip.status === 'active' && (
                       <>
@@ -154,7 +163,7 @@ export default function MotoristaViagens() {
                           Scanner
                         </Button>
                         <Button variant="danger" size="sm" onClick={() => handleEndTrip(trip.id)}>
-                          Encerrar
+                          Encerrar Viagem
                         </Button>
                       </>
                     )}

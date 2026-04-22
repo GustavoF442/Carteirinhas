@@ -12,6 +12,14 @@ interface ComparisonRow {
   nao_vai: number;
 }
 
+interface VehicleUsageRow {
+  placa: string;
+  modelo: string;
+  capacidade: number;
+  viagens: number;
+  total_passageiros: number;
+}
+
 interface FullReport {
   periodo: { inicio: string; fim: string; dias: number };
   total_alunos_ativos: number;
@@ -22,6 +30,7 @@ interface FullReport {
   boardings_by_curso: Record<string, number>;
   students_by_ponto: Record<string, number>;
   students_by_curso: Record<string, number>;
+  vehicle_usage: VehicleUsageRow[];
 }
 
 const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -328,6 +337,51 @@ export default function AdminRelatorios() {
           )}
         </Card>
       </div>
+
+      {/* Vehicle Usage Report */}
+      {report?.vehicle_usage && report.vehicle_usage.length > 0 && (
+        <Card className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Uso de Veículos</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="text-left px-3 py-2 font-medium text-gray-600">Placa</th>
+                  <th className="text-left px-3 py-2 font-medium text-gray-600">Modelo</th>
+                  <th className="text-center px-3 py-2 font-medium text-gray-600">Capacidade</th>
+                  <th className="text-center px-3 py-2 font-medium text-gray-600">Viagens</th>
+                  <th className="text-center px-3 py-2 font-medium text-gray-600">Total Pass.</th>
+                  <th className="text-center px-3 py-2 font-medium text-gray-600">Média/Viagem</th>
+                  <th className="text-center px-3 py-2 font-medium text-gray-600">Ocupação</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {report.vehicle_usage.sort((a, b) => b.viagens - a.viagens).map((v, i) => {
+                  const avg = v.viagens > 0 ? Math.round(v.total_passageiros / v.viagens) : 0;
+                  const pct = v.capacidade > 0 && v.viagens > 0 ? Math.round((avg / v.capacidade) * 100) : 0;
+                  return (
+                    <tr key={i} className="hover:bg-gray-50">
+                      <td className="px-3 py-2 font-medium">{v.placa}</td>
+                      <td className="px-3 py-2 text-gray-600">{v.modelo}</td>
+                      <td className="px-3 py-2 text-center">{v.capacidade}</td>
+                      <td className="px-3 py-2 text-center font-medium">{v.viagens}</td>
+                      <td className="px-3 py-2 text-center">{v.total_passageiros}</td>
+                      <td className="px-3 py-2 text-center">{avg}</td>
+                      <td className="px-3 py-2 text-center">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                          pct >= 90 ? 'bg-red-100 text-red-700' : pct >= 70 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
+                        }`}>
+                          {pct}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
 
       {/* Alunos cadastrados por Ponto e Curso */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

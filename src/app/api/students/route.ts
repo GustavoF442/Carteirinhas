@@ -22,7 +22,9 @@ export async function GET(request: NextRequest) {
       .select('*')
       .order('nome');
 
-    return NextResponse.json({ students: students || [] });
+    const res = NextResponse.json({ students: students || [] });
+    res.headers.set('Cache-Control', 'private, max-age=5, stale-while-revalidate=10');
+    return res;
   } catch (_error) {
     return NextResponse.json({ students: [] }, { status: 500 });
   }
