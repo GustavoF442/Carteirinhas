@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
 import { maskCPF, maskPhone, maskMatricula } from '@/lib/utils';
 
 export default function CadastroPage() {
@@ -26,6 +27,12 @@ export default function CadastroPage() {
     data_entrada: '',
     endereco: '',
   });
+
+  const [courses, setCourses] = useState<{id: string; nome: string; universidade: string}[]>([]);
+
+  useEffect(() => {
+    fetch('/api/courses').then(r => r.json()).then(d => setCourses(d.courses || [])).catch(() => {});
+  }, []);
 
   const updateField = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -166,11 +173,16 @@ export default function CadastroPage() {
             />
 
             <div className="grid grid-cols-2 gap-4">
-              <Input
+              <Select
                 label="Curso *"
-                placeholder="Ex: Direito"
+                placeholder="Selecione o curso"
+                options={courses.map(c => ({ value: c.nome, label: c.nome }))}
                 value={form.curso}
-                onChange={(e) => updateField('curso', e.target.value)}
+                onChange={(e) => {
+                  const selected = courses.find(c => c.nome === e.target.value);
+                  updateField('curso', e.target.value);
+                  if (selected) updateField('universidade', selected.universidade);
+                }}
                 required
               />
               <Input

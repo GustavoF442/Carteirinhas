@@ -84,8 +84,8 @@ export async function updateSession(request: NextRequest) {
 
       const role = profile?.role || user.user_metadata?.role || 'student';
 
-      // Redirect logged-in users away from login/cadastro
-      if (pathname === '/login' || pathname === '/cadastro') {
+      // Redirect logged-in users away from cadastro (but NOT login — login page handles signOut itself)
+      if (pathname === '/cadastro') {
         const url = request.nextUrl.clone();
         if (role === 'admin') {
           url.pathname = '/admin';

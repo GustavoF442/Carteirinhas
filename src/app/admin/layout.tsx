@@ -12,6 +12,7 @@ const navItems = [
   { label: 'Motoristas', href: '/admin/motoristas', icon: 'driver' },
   { label: 'Ônibus', href: '/admin/onibus', icon: 'bus' },
   { label: 'Trajetos', href: '/admin/trajetos', icon: 'route' },
+  { label: 'Cursos', href: '/admin/cursos', icon: 'book' },
   { label: 'Viagens', href: '/admin/viagens', icon: 'trip' },
   { label: 'Relatórios', href: '/admin/relatorios', icon: 'report' },
 ];

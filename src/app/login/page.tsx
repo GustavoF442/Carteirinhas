@@ -15,6 +15,18 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Sign out any existing session when login page loads
+  useEffect(() => {
+    const clearSession = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.auth.signOut();
+      }
+    };
+    clearSession();
+  }, []);
+
   // Email login
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
